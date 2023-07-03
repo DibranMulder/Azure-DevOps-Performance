@@ -1,0 +1,52 @@
+﻿@page "/pipelines"
+@using CloudRepublic.DevOps.ServerUI.Data
+@using CloudRepublic.DevOps.ServerUI.Data.Models;
+@inject AzureDevOpsService azureDevOpsService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Azure DevOps pipelines</PageTitle>
+
+<h1>Azure DevOps pipelines forecast</h1>
+
+<p></p>
+
+@if (pipelines == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pipeline in pipelines)
+            {
+                <tr>
+                    <td>@pipeline.PipelineId</td>
+                    <td>
+                        <a href="javascript:void(0);" @onclick="() => GoToDetailPage(pipeline.PipelineId)">@pipeline.Name</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<Pipeline> pipelines;
+
+    protected override async Task OnInitializedAsync()
+    {
+        pipelines = await azureDevOpsService.GetPipelinesAsync();
+    }
+
+    void GoToDetailPage(int pipelineId)
+    {
+        NavigationManager.NavigateTo($"/pipelines/{pipelineId}");
+    }
+}

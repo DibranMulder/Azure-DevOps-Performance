@@ -1,0 +1,77 @@
+﻿@page "/pipelines/{id:int}"
+@using CloudRepublic.DevOps.ServerUI.Components
+@using CloudRepublic.DevOps.ServerUI.Data;
+@using CloudRepublic.DevOps.ServerUI.Data.Models;
+@using Microsoft.TeamFoundation.Build.WebApi;
+
+@inject AzureDevOpsService azureDevOpsService
+
+<PageTitle>Azure DevOps pipeline</PageTitle>
+
+<h1>Azure DevOps pipelines</h1>
+
+<p></p>
+
+@if (pipelines == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Decription</th>
+                <th>Stages</th>
+                <th style="width: 100px">Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pipeline in pipelines)
+            {
+                    <tr>
+                        <td class="pipeline-run-desc-td">
+                            <div>
+                                @switch (pipeline.Status)
+                                {
+                                    case BuildStatus.Completed:
+                                        <span class="badge bg-success">Success</span>
+                                        break;
+                                    case BuildStatus.InProgress:
+                                        <span class="badge bg-warning">In progress</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-danger">Failed</span>
+                                        break;
+                                }
+                            </div>
+                        <div>
+                        <span class="pipeline-run-title">@pipeline.BuildNumber • @pipeline.Name</span><br />
+                        <span>@pipeline.Reason</span>
+                            </div>
+                    </td>
+                    <td></td>
+                    <td><DateTimeDifference StartDate="pipeline.StartTime" EndDate="pipeline.FinishTime" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private IEnumerable<PipelineRun> pipelines;
+
+    protected override async Task OnInitializedAsync()
+    {
+        pipelines = await azureDevOpsService.GetPipelineRunsAsync(Id);
+        //foreach (var pipeline in pipelines)
+        //{
+        //    pipelines = await azureDevOpsService.GetPipelineRunsAsync(Id);
+        //}
+    }
+}

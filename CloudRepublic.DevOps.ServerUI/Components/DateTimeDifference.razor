@@ -1,0 +1,38 @@
+﻿@using System
+
+<p>@GetTimeDifference(StartDate, EndDate)</p>
+
+@code {
+    [Parameter]
+    public DateTime? StartDate { get; set; }
+
+    [Parameter]
+    public DateTime? EndDate { get; set; }
+
+    private string GetTimeDifference(DateTime? start, DateTime? end)
+    {
+        string formattedDifference = string.Empty;
+        if (start.HasValue && end.HasValue)
+        {
+            TimeSpan difference = end.Value - start.Value;
+
+            if (difference.Days != 0)
+            {
+                formattedDifference += $"{(int)difference.Days}d ";
+            }
+            if (difference.Hours != 0)
+            {
+                formattedDifference += $"{(int)difference.Hours}h ";
+            }
+            if (difference.Minutes != 0)
+            {
+                formattedDifference += $"{(int)difference.Minutes}m ";
+            }
+            if (difference.Seconds != 0)
+            {
+                formattedDifference += $"{(int)difference.Seconds}s";
+            }
+        }
+        return formattedDifference;
+    }
+}

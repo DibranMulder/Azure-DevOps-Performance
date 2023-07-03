@@ -1,0 +1,18 @@
+﻿td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.pipeline-run-desc-td {
+    width: 70%;
+}
+
+.pipeline-run-title {
+    font-weight: bold;
+}
