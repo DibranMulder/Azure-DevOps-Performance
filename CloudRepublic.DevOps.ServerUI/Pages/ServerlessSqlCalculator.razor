@@ -1,0 +1,122 @@
+﻿@page "/serverlesssqlcalculator"
+@using CloudRepublic.DevOps.ServerUI.Data
+@using CloudRepublic.DevOps.ServerUI.Data.Models;
+@inject AzureDevOpsService azureDevOpsService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Azure SQL Serverless Calculator</PageTitle>
+
+<h1>Azure SQL Serverless Calculator</h1>
+
+<EditForm Model="@formData" OnValidSubmit="@HandleSubmit">
+    <div class="row">
+        <h2>Compute</h2>
+        <div class="col-md-6">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label for="pricePerVCorePerSec">Redundancy:</label>
+                <InputSelect id="pricePerVCorePerSec" class="form-control"
+                    ValueExpression="@(()=>formData.Redundancy)"
+                    Value="@formData.Redundancy" 
+                    ValueChanged="@((string value) => ZoneChanged(value))">
+                    <option value="local">Locally redundant</option>
+                    <option value="zone">Zone redundant</option>
+                </InputSelect>
+            </div>
+
+            <div class="form-group">
+                <label for="pricePerVCorePerSec">Price per vCore per second:</label>
+                <InputNumber id="pricePerVCorePerSec" class="form-control" @bind-Value="@formData.PricePerVCorePerSec"></InputNumber>
+                <ValidationMessage For="@(() => formData.PricePerVCorePerSec)" />
+            </div>
+
+            <div class="form-group">
+                <label for="minimumVCores">Minimum vCores:</label>
+                <InputNumber id="minimumVCores" class="form-control" @bind-Value="@formData.MinimumVCores"></InputNumber>
+                <ValidationMessage For="@(() => formData.MinimumVCores)" />
+            </div>
+
+            <div class="form-group">
+                <label for="maximumVCores">Maximum vCores:</label>
+                <InputNumber id="maximumVCores" class="form-control" @bind-Value="@formData.MaximumVCores"></InputNumber>
+                <ValidationMessage For="@(() => formData.MaximumVCores)" />
+            </div>
+
+            
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="secondsPerWeek">Seconds per week:</label>
+                <InputNumber id="secondsPerWeek" class="form-control" @bind-Value="@formData.SecondsPerWeek"></InputNumber>
+                <ValidationMessage For="@(() => formData.SecondsPerWeek)" />
+            </div>
+            <div class="form-group">
+                <label for="idleCostsPerWeek">Idle costs per week:</label>
+                <InputNumber id="idleCostsPerWeek" disabled="true" class="form-control" @bind-Value="@formData.IdleCostsPerWeek"></InputNumber>
+                <ValidationMessage For="@(() => formData.IdleCostsPerWeek)" />
+            </div
+            <div class="form-group">
+                <label for="peekCostsPerWeek">Peek costs per week:</label>
+                <InputNumber id="peekCostsPerWeek" disabled="true" class="form-control" @bind-Value="@formData.PeekCostsPerWeek"></InputNumber>
+                <ValidationMessage For="@(() => formData.PeekCostsPerWeek)" />
+            </div>
+            <div class="form-group">
+                <label for="totalCostsPerWeek">Total costs per week:</label>
+                <InputNumber id="totalCostsPerWeek" disabled="true" class="form-control" @bind-Value="@formData.TotalCostsPerWeek"></InputNumber>
+                <ValidationMessage For="@(() => formData.TotalCostsPerWeek)" />
+            </div>
+            
+        </div>
+    </div>
+    <div class="row">
+        <h2>Memory</h2>
+        <div class="col-md-6">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </div>
+    
+</EditForm>
+
+@code {
+    private MyFormData formData = new MyFormData();
+
+    private void HandleSubmit()
+    {
+        this.formData.IdleCostsPerWeek = Math.Round(this.formData.PricePerVCorePerSec * this.formData.MinimumVCores * this.formData.SecondsPerWeek, 2);
+        this.formData.PeekCostsPerWeek = Math.Round((this.formData.MaximumVCores - this.formData.MinimumVCores) * 8 * 5 * 3600 * this.formData.PricePerVCorePerSec, 2);
+        this.formData.TotalCostsPerWeek = Math.Round(this.formData.IdleCostsPerWeek + this.formData.PeekCostsPerWeek, 2);
+    }
+
+    private void ZoneChanged(string redundancy)
+    {
+        this.formData.Redundancy = redundancy;
+
+        if (this.formData.Redundancy == "local")
+        {
+            this.formData.PricePerVCorePerSec = 0.0001502;
+        }
+        else
+        {
+            this.formData.PricePerVCorePerSec = 0.0002341;
+        }
+        this.HandleSubmit();
+    }
+
+    private class MyFormData
+    {
+        public string Redundancy = "local";
+        public double PricePerVCorePerSec = 0.0001502;
+        public double MinimumVCores = 0.5;
+        public double MaximumVCores = 4;
+
+        public int SecondsPerWeek = 604800;
+        public double IdleCostsPerWeek = 45.42;
+        public double PeekCostsPerWeek = 75.70;
+        public double TotalCostsPerWeek = 121.12;
+    }
+}
