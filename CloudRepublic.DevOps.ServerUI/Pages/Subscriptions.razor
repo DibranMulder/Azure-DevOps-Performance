@@ -1,0 +1,104 @@
+﻿@page "/"
+@page "/subscriptions"
+@using CloudRepublic.DevOps.ServerUI.Data;
+@using CloudRepublic.DevOps.ServerUI.Data.Models.Azure;
+@inject AzureService azureService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Subscriptions</PageTitle>
+
+<h1>Subscriptions</h1>
+
+@if (subscriptions == null)
+{
+    <p><em>Loading subscriptions</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Offer</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sub in subscriptions)
+            {
+                <tr>
+                    <td>@sub.SubscriptionId</td>
+                    <td>@sub.DisplayName</td>
+                    <td>@sub.SubscriptionPolicies.QuotaId</td>
+                    <td><a href="javascript:void(0);" @onclick="() => GoToAppServicePlans(sub.SubscriptionId)">App Service Plans</a></td>
+                    <td><a href="javascript:void(0);" @onclick="() => GoToSqlServers(sub.SubscriptionId)">SQL Servers</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h2>Resource groups</h2>
+@if (resourceGroups == null)
+{
+    <p><em>Loading resource groups</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Location</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var rg in resourceGroups)
+            {
+                <tr>
+                    <td>@rg.Name</td>
+                    <td>@rg.Location</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<Subscription> subscriptions;
+    private IEnumerable<ResourceGroup> resourceGroups;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var subRes = await azureService.GetSubscriptionsAsync();
+        if (subRes != null)
+        {
+            subscriptions = subRes.Value;
+            if (subRes.Count.Type == "Total" && subRes.Count.Value > 0)
+            {
+                var sub = subscriptions.FirstOrDefault();
+                if (sub != null)
+                {
+                    var resourceGroupsResponse = await azureService.GetResourceGroupsAsync(sub.SubscriptionId);
+                    if (resourceGroupsResponse != null)
+                    {
+                        resourceGroups = resourceGroupsResponse.Value;
+                    }
+                }
+            }
+        }
+    }
+
+    void GoToAppServicePlans(Guid subscriptionId)
+    {
+        NavigationManager.NavigateTo($"/subscriptions/{subscriptionId}/appserviceplans");
+    }
+
+    void GoToSqlServers(Guid subscriptionId)
+    {
+        NavigationManager.NavigateTo($"/subscriptions/{subscriptionId}/sqlservers");
+    }
+}
+
