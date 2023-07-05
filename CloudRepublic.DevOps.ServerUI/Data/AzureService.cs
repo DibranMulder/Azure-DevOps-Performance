@@ -13,8 +13,8 @@ namespace CloudRepublic.DevOps.ServerUI.Data
         {
             var httpClient = _httpClientFactory.CreateClient("azureHttpClient");
 
-            const string ApiVersion = "2020-01-01";
-            var response = await httpClient.GetAsync($"https://management.azure.com/subscriptions?api-version={ApiVersion}");
+            const string apiVersion = "2020-01-01";
+            var response = await httpClient.GetAsync($"https://management.azure.com/subscriptions?api-version={apiVersion}");
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsAsync<ListResponse<Subscription>>();
@@ -30,8 +30,8 @@ namespace CloudRepublic.DevOps.ServerUI.Data
         {
             var httpClient = _httpClientFactory.CreateClient("azureHttpClient");
 
-            const string ApiVersion = "2020-09-01";
-            var response = await httpClient.GetAsync($"https://management.azure.com/subscriptions/{subscriptionId}/resourcegroups?api-version={ApiVersion}");
+            const string apiVersion = "2020-09-01";
+            var response = await httpClient.GetAsync($"https://management.azure.com/subscriptions/{subscriptionId}/resourcegroups?api-version={apiVersion}");
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsAsync<ListResponse<ResourceGroup>>();
@@ -43,15 +43,15 @@ namespace CloudRepublic.DevOps.ServerUI.Data
             }
         }
 
-        public async Task<ListResponse<ResourceGroup>> GetAppServicePlans(Guid subscriptionId)
+        public async Task<ListResponse<T>> GetResourcesOfTypeInSubscriptionAsync<T>(Guid subscriptionId, string provider)
         {
             var httpClient = _httpClientFactory.CreateClient("azureHttpClient");
 
-            const string ApiVersion = "2020-09-01";
-            var response = await httpClient.GetAsync($"https://management.azure.com/subscriptions/{subscriptionId}/resourcegroups?api-version={ApiVersion}");
+            const string apiVersion = "2022-03-01";
+            var response = await httpClient.GetAsync($"https://management.azure.com/subscriptions/{subscriptionId}/providers/{provider}?api-version={apiVersion}");
             if (response.IsSuccessStatusCode)
             {
-                var content = await response.Content.ReadAsAsync<ListResponse<ResourceGroup>>();
+                var content = await response.Content.ReadAsAsync<ListResponse<T>>();
                 return content;
             }
             else
