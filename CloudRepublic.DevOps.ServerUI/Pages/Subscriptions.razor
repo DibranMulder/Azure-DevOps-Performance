@@ -1,5 +1,4 @@
-﻿@page "/"
-@page "/subscriptions"
+﻿@page "/subscriptions"
 @using CloudRepublic.DevOps.ServerUI.Data;
 @using CloudRepublic.DevOps.ServerUI.Data.Models.Azure;
 @inject AzureService azureService
@@ -7,7 +6,8 @@
 
 <PageTitle>Subscriptions</PageTitle>
 
-<h1>Subscriptions</h1>
+<h1><img src="icons/subscriptions.svg" /> Subscriptions</h1>
+
 
 @if (subscriptions == null)
 {
@@ -40,7 +40,7 @@ else
     </table>
 }
 
-<h2>Resource groups</h2>
+<h2><img src="icons/resource-groups.svg" /> Resource groups</h2>
 @if (resourceGroups == null)
 {
     <p><em>Loading resource groups</em></p>

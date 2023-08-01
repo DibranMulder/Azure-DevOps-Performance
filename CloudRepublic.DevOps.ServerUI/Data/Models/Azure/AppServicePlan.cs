@@ -4,9 +4,9 @@
     {
         public string Id { get; set; }
         public string Name { get; set; }
-        public TypeEnum Type { get; set; }
-        public Kind Kind { get; set; }
-        public Ion Location { get; set; }
+        public string Type { get; set; }
+        public string Kind { get; set; }
+        public string Location { get; set; }
         public Properties Properties { get; set; }
         public Sku Sku { get; set; }
     }

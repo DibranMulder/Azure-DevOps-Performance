@@ -1,0 +1,121 @@
+﻿@page "/"
+@page "/account"
+@inject NavigationManager NavigationManager
+
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage ProtectedSessionStore
+
+<div class="row">
+    <div class="col-md-6">
+        <h2>Azure</h2>
+        <EditForm Model="@azureFormData" OnValidSubmit="@HandleAzureSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label for="tenantId">TenantId:</label>
+                <InputText id="tenantId" class="form-control" @bind-Value="@azureFormData.TenantId"></InputText>
+            </div>
+
+            <div class="form-group">
+                <label for="clientId">ClientId:</label>
+                <InputText id="clientId" class="form-control" @bind-Value="@azureFormData.ClientId"></InputText>
+            </div>
+
+            <div class="form-group">
+                <label for="clientSecret">Client secret:</label>
+                <InputText id="clientSecret" type="password" class="form-control" @bind-Value="@azureFormData.ClientSecret"></InputText>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save</button>
+        </EditForm>
+    </div>
+    <div class="col-md-6">
+        <h2>Azure DevOps</h2>
+        <EditForm Model="@azureDevOpsFormData" OnValidSubmit="@HandleAzureDevOpsSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label for="organization">Organization:</label>
+                <InputText id="organization" class="form-control" @bind-Value="@azureDevOpsFormData.Organization"></InputText>
+            </div>
+
+            <div class="form-group">
+                <label for="project">Project:</label>
+                <InputText id="project" class="form-control" @bind-Value="@azureDevOpsFormData.Project"></InputText>
+            </div>
+
+            <div class="form-group">
+                <label for="personalAccessToken">Personal access token:</label>
+                <InputText id="personalAccessToken" type="password" class="form-control" @bind-Value="@azureDevOpsFormData.PersonalAccessToken"></InputText>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save</button>
+        </EditForm>
+    </div>
+</div>
+
+
+@code {
+    private AzureFormData azureFormData = new AzureFormData();
+    private AzureDevOpsFormData azureDevOpsFormData = new AzureDevOpsFormData();
+
+    /// <summary>
+    /// Use After Render to get the values from the session store.
+    /// We can't use OnInit because the session store is not yet available since it requires a JavaScript interop.
+    /// </summary>
+    /// <param name="firstRender"></param>
+    /// <returns></returns>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            this.azureFormData.TenantId = await GetProtectedSessionStoreStringAsync("tenantId");
+            this.azureFormData.ClientId = await GetProtectedSessionStoreStringAsync("clientId");
+            this.azureFormData.ClientSecret = await GetProtectedSessionStoreStringAsync("clientSecret");
+
+            this.azureDevOpsFormData.Organization = await GetProtectedSessionStoreStringAsync("organization");
+            this.azureDevOpsFormData.Project = await GetProtectedSessionStoreStringAsync("project");
+            this.azureDevOpsFormData.PersonalAccessToken = await GetProtectedSessionStoreStringAsync("personalAccessToken");
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task<string> GetProtectedSessionStoreStringAsync(string key)
+    {
+        var res = await ProtectedSessionStore.GetAsync<string>(key);
+        if (res.Success)
+        {
+            return res.Value;
+        }
+        return string.Empty;
+    }
+
+    private async Task HandleAzureSubmit()
+    {
+        await ProtectedSessionStore.SetAsync("tenantId", azureFormData.TenantId);
+        await ProtectedSessionStore.SetAsync("clientId", azureFormData.ClientId);
+        await ProtectedSessionStore.SetAsync("clientSecret", azureFormData.ClientSecret);
+    }
+
+    private async Task HandleAzureDevOpsSubmit()
+    {
+        await ProtectedSessionStore.SetAsync("organization", azureDevOpsFormData.Organization);
+        await ProtectedSessionStore.SetAsync("project", azureDevOpsFormData.Project);
+        await ProtectedSessionStore.SetAsync("personalAccessToken", azureDevOpsFormData.PersonalAccessToken);
+    }
+
+    private class AzureFormData
+    {
+        public string TenantId { get; set; }
+        public string ClientId { get; set; }
+        public string ClientSecret { get; set; }
+    }
+
+    private class AzureDevOpsFormData
+    {
+        public string Organization { get; set; }
+        public string Project { get; set; }
+        public string PersonalAccessToken { get; set; }
+    }
+}
